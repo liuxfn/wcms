@@ -1,0 +1,306 @@
+
+<title>欢迎访问 - 网络爬虫管理系统</title>
+
+<link rel="stylesheet" href="components/bootstrap-daterangepicker/daterangepicker.min.css" />
+<link rel="stylesheet" href="components/_mod/jqgrid/ui.jqgrid.min.css" />
+<style>
+    .ui-jqgrid tr.jqgrow td {
+        white-space: normal !important;
+        height:auto;
+        vertical-align:text-top;
+        padding-top:2px;
+    }
+</style>
+
+<!-- ajax layout which only needs content area -->
+<div class="page-header">
+    <h1>
+        夺宝岛
+        <small>
+            <i class="ace-icon fa fa-angle-double-right"></i>
+            夺宝岛商品查询
+        </small>
+    </h1>
+</div><!-- /.page-header -->
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <!--自定义搜索 <div id="mysearch" class="well well-sm"></div>-->
+
+        <table id="grid-table"></table>
+
+        <div id="grid-pager"></div>
+
+        <!-- PAGE CONTENT ENDS -->
+    </div><!-- /.col -->
+</div><!-- /.row -->
+
+<div id="dialog-confirm" class="hide">
+    <div class="alert alert-danger bigger-110">
+        登陆超时，请重新登陆！
+    </div>
+</div>
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+    var scripts = [
+        "components/jqGrid/js/jquery.jqGrid.v5.3.1.js",
+        "components/jqGrid/js/minified/i18n/grid.locale-cn.js",
+        "components/bootstrap-daterangepicker/daterangepicker.min.js",
+        "components/moment/moment.min.js",
+        "components/moment/locale/zh-cn.js",
+        "components/jqGrid/js/addons/jszip.min.js"
+    ]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function() {
+        //inline scripts related to this page
+
+        jQuery(function($) {
+            moment.locale('zh-cn');
+            var grid_selector = "#grid-table";
+            var pager_selector = "#grid-pager";
+
+
+            var parent_column = $(grid_selector).closest('[class*="col-"]');
+            //resize to fit page size
+            $(window).on('resize.jqGrid', function () {
+                $(grid_selector).jqGrid( 'setGridWidth', parent_column.width() );
+            })
+
+            //resize on sidebar collapse/expand
+            $(document).on('settings.ace.jqGrid' , function(ev, event_name, collapsed) {
+                if( event_name === 'sidebar_collapsed' || event_name === 'main_container_fixed' ) {
+                    //setTimeout is for webkit only to give time for DOM changes and then redraw!!!
+                    setTimeout(function() {
+                        $(grid_selector).jqGrid( 'setGridWidth', parent_column.width() );
+                    }, 20);
+                }
+            })
+
+
+            jQuery(grid_selector).jqGrid({
+                url:"php/dbd.php?oper=query",
+                datatype: "json",
+                height: 280,
+                colNames:['商品成色','图片','商品名称','结束时间','当前价格','参考价格','商品大类','商品小类','商品ID'],
+                colModel:[
+                    {name:'spcs',index:'spcs', width:90,sortable:false,searchoptions:{sopt:['eq','cn']}},
+                    {name:'primaryPic',index:'primaryPic', width:175,search:false,formatter:function(cellvalue,options,rowObject ){return '<img src="https://img10.360buyimg.com/n1/s250x250_'+cellvalue+ '"  style="width:175px;height:175px;" />';}},
+                    {name:'productName',index:'productName', width:300,sortable:false,searchoptions:{sopt:['eq','cn']},formatter:function(cellvalue,options,rowObject ){return '<a href="https://paipai.m.jd.com/m/raise_auction.html?auctionId='+rowObject.id+'" target="_blank">'+cellvalue+'</a>';}},
+                    {name:'endTime',index:'endTime', width:150, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
+                    {name:'currentPrice',index:'currentPrice', width:70, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
+                    {name:'cappedPrice',index:'cappedPrice', width:70, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
+                    {name:'category1Name',index:'category1Name', width:70, sortable:false,searchoptions:{sopt:['eq','cn']}},
+                    {name:'category2Name',index:'category2Name', width:70, sortable:false,searchoptions:{sopt:['eq','cn']}},
+                    {name:'id',index:'id', width:80, search:false,key:true}
+                ],
+
+                viewrecords : true,
+                rowNum:10,
+                rowList:[10,20,30],
+                pager : pager_selector,
+                altRows: true,
+                //toppager: true,
+
+                shrinkToFit:false,
+                autoScroll: true,
+
+                multiselect: true,
+                //multikey: "ctrlKey",
+                multiboxonly: true,
+
+                loadComplete : function(t) {
+                    if(t.code == '402'){
+                        //bootbox.alert({message:"登陆超时，请重新登陆！",size:"small",function(){}});
+                        alert('登陆超时，请重新登陆！');
+                        var href = './login.html';
+                        if(location.href.indexOf('wap') != -1){
+                            href += '?type=wap';
+                        }
+                        location.href = href;
+                    }
+
+                    var table = this;
+                    setTimeout(function(){
+                        //styleCheckbox(table);
+
+                        updateActionIcons(table);
+                        updatePagerIcons(table);
+                        enableTooltips(table);
+                        if(location.href.indexOf('wap') != -1){
+                            resizePager(table);
+                        }
+                    }, 0);
+                },
+
+                editurl: "php/dbd.php",
+                caption: "夺宝岛商品查询"
+
+            });
+            $(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+
+
+            //navButtons
+            jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                    { 	//navbar options
+                        edit: false,
+                        edittitle:'',
+                        editicon : 'ace-icon fa fa-pencil blue',
+                        add: false,
+                        addtitle:'',
+                        addicon : 'ace-icon fa fa-plus-circle purple',
+                        del: false,
+                        deltitle:'',
+                        delicon : 'ace-icon fa fa-trash-o red',
+                        search: true,
+                        searchtitle:'',
+                        searchicon : 'ace-icon fa fa-search orange',
+                        refresh: true,
+                        refreshtitle:'',
+                        refreshicon : 'ace-icon fa fa-refresh green'
+                    },
+                    null,
+                    null,
+                    null,
+                    {
+                        //search form
+                        closeAfterSearch:true,
+                        recreateForm: true,
+                        caption:'查询',
+                        Find:'查询',
+                        afterShowSearch: function(e){
+                            var form = $(e[0]);
+                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                            style_search_form(form);
+                        },
+                        afterRedraw: function(){
+                            style_search_filters($(this));
+                        }
+                        ,
+                        multipleSearch: true
+                    }
+            )
+
+            /*if(location.href.indexOf('wap') == -1){
+                jQuery(grid_selector).jqGrid('navButtonAdd',pager_selector,
+                        {
+                            caption:'',
+                            title:'导出',
+                            buttonicon: 'ace-icon fa fa-cloud-download grey',
+                            onClickButton:function(){
+
+                                $.ajax({
+                                    type: "post",
+                                    url: "php/persondd.php?oper=query&rows=50000&page=1&type=export",
+                                    dataType: "json",
+                                    beforeSend: function (e) {
+                                        e.setRequestHeader("Content-Type", "application/json")
+                                    },
+                                    success: function(t) {
+                                        //jqgrid excel导出 依赖jszip、jqgrid 5.3.1以上版本
+                                        jQuery(grid_selector).jqGrid("exportToExcel",{
+                                            includeLabels : true,
+                                            includeGroupHeader : false,
+                                            includeFooter: false,
+                                            fileName : "人员调动情况.xlsx",
+                                            //maxlength : 40 // maxlength for visible string data
+                                            data: t.rows
+                                        })
+                                    },
+                                    error: function(t) {
+                                        //$('#error_div').css('display','');
+                                        //$('#error_msg').html(t.message);
+                                    }
+                                });
+                            }
+                        });
+            }*/
+
+            function style_search_filters(form) {
+                form.find('.delete-rule').val('X');
+                form.find('.add-rule').addClass('btn btn-xs btn-primary');
+                form.find('.add-group').addClass('btn btn-xs btn-success');
+                form.find('.delete-group').addClass('btn btn-xs btn-danger');
+            }
+            function style_search_form(form) {
+                var dialog = form.closest('.ui-jqdialog');
+                var buttons = dialog.find('.EditTable')
+                buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-sm btn-info').find('.ui-icon').attr('class', 'ace-icon fa fa-retweet');
+                buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-sm btn-inverse').find('.ui-icon').attr('class', 'ace-icon fa fa-comment-o');
+                buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-sm btn-purple').find('.ui-icon').attr('class', 'ace-icon fa fa-search');
+            }
+
+
+
+            //it causes some flicker when reloading or navigating grid
+            //it may be possible to have some custom formatter to do this as the grid is being created to prevent this
+            //or go back to default browser checkbox styles for the grid
+            function styleCheckbox(table) {
+                $(table).find("td[aria-describedby='grid-table_user_sf'][title='是']").parent().children().first().children().first().attr('disabled','disabled');
+                /**
+                 $(table).find('input:checkbox').addClass('ace')
+                 .wrap('<label />')
+                 .after('<span class="lbl align-top" />')
+
+
+                 $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                 .find('input.cbox[type=checkbox]').addClass('ace')
+                 .wrap('<label />').after('<span class="lbl align-top" />');
+                 */
+            }
+
+            function resizePager(table){
+                $('.ui-pager-table').css('height','50%');
+            }
+
+
+            //unlike navButtons icons, action icons in rows seem to be hard-coded
+            //you can change them like this in here if you want
+            function updateActionIcons(table) {
+                /**
+                 var replacement =
+                 {
+                     'ui-ace-icon fa fa-pencil' : 'ace-icon fa fa-pencil blue',
+                     'ui-ace-icon fa fa-trash-o' : 'ace-icon fa fa-trash-o red',
+                     'ui-icon-disk' : 'ace-icon fa fa-check green',
+                     'ui-icon-cancel' : 'ace-icon fa fa-times red'
+                 };
+                 $(table).find('.ui-pg-div span.ui-icon').each(function(){
+				var icon = $(this);
+				var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+				if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+			})
+                 */
+            }
+
+            //replace icons with FontAwesome icons like above
+            function updatePagerIcons(table) {
+                var replacement =
+                {
+                    'ui-icon-seek-first' : 'ace-icon fa fa-angle-double-left bigger-140',
+                    'ui-icon-seek-prev' : 'ace-icon fa fa-angle-left bigger-140',
+                    'ui-icon-seek-next' : 'ace-icon fa fa-angle-right bigger-140',
+                    'ui-icon-seek-end' : 'ace-icon fa fa-angle-double-right bigger-140'
+                };
+                $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                    var icon = $(this);
+                    var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+                    if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                })
+            }
+
+            function enableTooltips(table) {
+                $('.navtable .ui-pg-button').tooltip({container:'body'});
+                $(table).find('.ui-pg-div').tooltip({container:'body'});
+            }
+
+            //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
+
+            $(document).one('ajaxloadstart.page', function(e) {
+                $.jgrid.gridDestroy(grid_selector);
+                $('.ui-jqdialog').remove();
+            });
+        });
+    });
+</script>
