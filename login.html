@@ -236,13 +236,15 @@
 						required: true
 					},
 					name: {
-						required: true
+						required: true,
+						digits:true
 					}
 				},
 
 				messages: {
 					name: {
-						required: "请输入用户ID"
+						required: "请输入用户ID",
+						digits:"用户ID为数字"
 					},
 					password: {
 						required: "请输入密码"
