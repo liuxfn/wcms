@@ -60,11 +60,11 @@ function buildQueryCondition()
         $operator = $rules[$x]['op'] == "in" ? "in" : ($rules[$x]['op'] == "ni" ? "not in" : ($rules[$x]['op'] == "eq" ? "=" : ($rules[$x]['op'] == "cn" ? "like" : ($rules[$x]['op'] == "lt" ? "<" : ($rules[$x]['op'] == "le" ? "<=" : ($rules[$x]['op'] == "gt" ? ">" : ">="))))));
         if($operator == 'in' || $operator == 'ni')
         {
-            $queryCondition.=$rules[$x]['field']." ".$operator." (".$rules[$x]['data'].") ";
+            $queryCondition.=$rules[$x]['field']." ".$operator." (".addslashes($rules[$x]['data']).") ";
         }else if($operator == 'like'){
-            $queryCondition.=$rules[$x]['field']." ".$operator." '%".$rules[$x]['data']."%' ";
+            $queryCondition.=$rules[$x]['field']." ".$operator." '%".addslashes($rules[$x]['data'])."%' ";
         }else{
-            $queryCondition.=$rules[$x]['field']." ".$operator." '".$rules[$x]['data']."' ";
+            $queryCondition.=$rules[$x]['field']." ".$operator." '".addslashes($rules[$x]['data'])."' ";
         }
     }
     return $queryCondition;

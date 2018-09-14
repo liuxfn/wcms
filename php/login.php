@@ -24,6 +24,11 @@ function login($postStr)
         return "{\"code\":\"401\",\"message\":\"用户名或密码为空，请重试\"}";
     }
 
+    if(!is_numeric($user_id))
+    {
+        return "{\"code\":\"401\",\"message\":\"用户名或密码错误\"}";
+    }
+
 	$reslult = $GLOBALS['dbUtil']->querySql("select user_id,user_name,user_sf,ssxm from user where user_id = ".$user_id." and password = '".$password."'");
     $p = json_decode($reslult,true);
     if($p['total']>0)

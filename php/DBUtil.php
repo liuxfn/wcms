@@ -9,10 +9,18 @@
  */
 class DBUtil
 {
+    public static $dbconf = [];
+
     private function createConn()
     {
-        $jsonStr = file_get_contents('mysql.json');
-        $json = json_decode($jsonStr,true);
+        //$jsonStr = file_get_contents('mysql.json');
+        //$json = json_decode($jsonStr,true);
+
+        if(count(self::$dbconf) == 0){
+            self::$dbconf = include_once 'dbconfig.php';
+        }
+        $json = self::$dbconf;
+
         $con = mysqli_connect($json['servername'],$json['username'],$json['password'],$json['defaultdb'],$json['port']);
         // 检查连接
         if (!$con)
