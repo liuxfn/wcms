@@ -23,12 +23,13 @@ function dsrwHandler()
 
 function sendMessage()
 {
-    $sql = "select * from dbd_spxx where timestampdiff(minute,now(),endTime) < 5 and sc = 'Y'";
+    $sql = "select s.*,timestampdiff(minute,now(),endTime)   from dbd_spxx s where timestampdiff(minute,now(),endTime) <= 5
+      and timestampdiff(minute,now(),endTime) >0 and sc = 'Y'";
     $reslult = $GLOBALS['dbUtil']->querySql($sql);
     $rtnArray = json_decode($reslult,true);
     $webhook = "https://oapi.dingtalk.com/robot/send?access_token=09a01c45b757b76888a904cb2ff7c7aff9a47e47fb9a8502230e1c9554a5fb5c";
     foreach ($rtnArray['rows'] as $value){
-        $link = ['text'=>"您收藏的商品将在5分钟后结束拍卖，请及时购买！。",
+        $link = ['text'=>"您收藏的商品将在5分钟后结束拍卖，请及时购买！",
             'title'=> "【".$value['productName']."】",
             'picUrl'=> "https://img10.360buyimg.com/n1/s250x250_".$value['primaryPic'],
             'messageUrl'=> "https://paipai.m.jd.com/m/raise_auction.html?auctionId=".$value['id']];
