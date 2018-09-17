@@ -23,7 +23,7 @@ function dsrwHandler()
 
 function sendMessage()
 {
-    $sql = "select s.*,timestampdiff(minute,now(),endTime)   from dbd_spxx s where timestampdiff(minute,now(),endTime) <= 5
+    $sql = "select s.*,timestampdiff(minute,now(),endTime) sysj from dbd_spxx s where timestampdiff(minute,now(),endTime) <= 5
       and timestampdiff(minute,now(),endTime) >0 and sc = 'Y'";
     $reslult = $GLOBALS['dbUtil']->querySql($sql);
     $rtnArray = json_decode($reslult,true);
