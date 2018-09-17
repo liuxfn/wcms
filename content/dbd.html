@@ -55,6 +55,7 @@
     $('.page-content-area').ace_ajax('loadScripts', scripts, function() {
         //inline scripts related to this page
 
+
         jQuery(function($) {
             moment.locale('zh-cn');
             var grid_selector = "#grid-table";
@@ -78,20 +79,22 @@
             })
 
 
+
             jQuery(grid_selector).jqGrid({
                 url:"php/dbd.php?oper=query",
                 datatype: "json",
                 height: 280,
-                colNames:['商品成色','图片','商品名称','结束时间','当前价格','参考价格','商品大类','商品小类','商品ID'],
+                colNames:['收藏','商品成色','图片','商品名称','结束时间','当前价格','参考价格','商品大类','商品小类','商品ID'],
                 colModel:[
-                    {name:'spcs',index:'spcs', width:90,sortable:false,searchoptions:{sopt:['eq','cn']}},
+                    {name:'sc',index:'sc', width:40,align:'center',sortable:false,formatter:function(cellvalue,options,rowObject ){return '<i onclick="collect('+rowObject.id+',\''+cellvalue+'\','+options.rowId+')" class="ace-icon fa-2x fa '+(cellvalue=="Y"?"fa-heart red":"fa-heart-o")+'" style="cursor:pointer;"></i>'},searchoptions:{sopt:['eq'],value:":;Y:已收藏;N:未收藏"},stype:'select',search:true},
+                    {name:'spcs',index:'spcs', width:90,sortable:false,search:false,searchoptions:{sopt:['cn']}},
                     {name:'primaryPic',index:'primaryPic', width:175,search:false,formatter:function(cellvalue,options,rowObject ){return '<img src="https://img10.360buyimg.com/n1/s250x250_'+cellvalue+ '"  style="width:175px;height:175px;" />';}},
-                    {name:'productName',index:'productName', width:300,sortable:false,searchoptions:{sopt:['eq','cn']},formatter:function(cellvalue,options,rowObject ){return '<a href="https://paipai.m.jd.com/m/raise_auction.html?auctionId='+rowObject.id+'" target="_blank">'+cellvalue+'</a>';}},
-                    {name:'endTime',index:'endTime', width:150, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
-                    {name:'currentPrice',index:'currentPrice', width:70, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
-                    {name:'cappedPrice',index:'cappedPrice', width:70, sortable:false,searchoptions:{sopt:['eq','lt','le','gt','ge']}},
-                    {name:'category1Name',index:'category1Name', width:70, sortable:false,searchoptions:{sopt:['eq','cn']}},
-                    {name:'category2Name',index:'category2Name', width:70, sortable:false,searchoptions:{sopt:['eq','cn']}},
+                    {name:'productName',index:'productName', width:300,sortable:false,searchoptions:{sopt:['cn']},formatter:function(cellvalue,options,rowObject ){return '<a href="https://paipai.m.jd.com/m/raise_auction.html?auctionId='+rowObject.id+'" target="_blank">'+cellvalue+'</a>';}},
+                    {name:'endTime',index:'endTime', width:140, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
+                    {name:'currentPrice',index:'currentPrice', width:70, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
+                    {name:'cappedPrice',index:'cappedPrice', width:70, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
+                    {name:'category1Name',index:'category1Name', width:70, sortable:false,searchoptions:{sopt:['cn']}},
+                    {name:'category2Name',index:'category2Name', width:70, sortable:false,searchoptions:{sopt:['cn']}},
                     {name:'id',index:'id', width:80, search:false,key:true}
                 ],
 
@@ -105,9 +108,9 @@
                 shrinkToFit:false,
                 autoScroll: true,
 
-                multiselect: true,
+                multiselect: false,
                 //multikey: "ctrlKey",
-                multiboxonly: true,
+                multiboxonly: false,
 
                 loadComplete : function(t) {
                     if(t.code == '402'){
@@ -181,40 +184,35 @@
                     }
             )
 
-            /*if(location.href.indexOf('wap') == -1){
-                jQuery(grid_selector).jqGrid('navButtonAdd',pager_selector,
-                        {
-                            caption:'',
-                            title:'导出',
-                            buttonicon: 'ace-icon fa fa-cloud-download grey',
-                            onClickButton:function(){
-
-                                $.ajax({
-                                    type: "post",
-                                    url: "php/persondd.php?oper=query&rows=50000&page=1&type=export",
-                                    dataType: "json",
-                                    beforeSend: function (e) {
-                                        e.setRequestHeader("Content-Type", "application/json")
-                                    },
-                                    success: function(t) {
-                                        //jqgrid excel导出 依赖jszip、jqgrid 5.3.1以上版本
-                                        jQuery(grid_selector).jqGrid("exportToExcel",{
-                                            includeLabels : true,
-                                            includeGroupHeader : false,
-                                            includeFooter: false,
-                                            fileName : "人员调动情况.xlsx",
-                                            //maxlength : 40 // maxlength for visible string data
-                                            data: t.rows
-                                        })
-                                    },
-                                    error: function(t) {
-                                        //$('#error_div').css('display','');
-                                        //$('#error_msg').html(t.message);
+            jQuery(grid_selector).jqGrid('navButtonAdd',pager_selector,
+                    {
+                        caption:'',
+                        title:'',
+                        buttonicon: 'ace-icon fa fa-download red',
+                        onClickButton:function(){
+                            $(grid_selector).jqGrid("progressBar", {method:"show", loadtype : 'enable', htmlcontent:'商品信息下载中……' });
+                            $.ajax({
+                                type: "post",
+                                url: "php/dbd.php?oper=refresh",
+                                dataType: "json",
+                                beforeSend: function (e) {
+                                    e.setRequestHeader("Content-Type", "application/json")
+                                },
+                                success: function(t) {
+                                    if(t.code == 200){
+                                        bootbox.alert({message: t.message,size:"small",callback:function(){
+                                            $(grid_selector).jqGrid("progressBar", {method:"hide", loadtype : 'enable' });
+                                            $('#refresh_grid-table').find('div').click();
+                                         }});
                                     }
-                                });
-                            }
-                        });
-            }*/
+                                },
+                                error: function(t) {
+                                    //$('#error_div').css('display','');
+                                    //$('#error_msg').html(t.message);
+                                }
+                            });
+                        }
+                    });
 
             function style_search_filters(form) {
                 form.find('.delete-rule').val('X');
@@ -229,6 +227,7 @@
                 buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-sm btn-inverse').find('.ui-icon').attr('class', 'ace-icon fa fa-comment-o');
                 buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-sm btn-purple').find('.ui-icon').attr('class', 'ace-icon fa fa-search');
             }
+
 
 
 

@@ -2,9 +2,9 @@
 return [
     'servername'=>'localhost',
     'username'=>'root',
-    'password'=>'123456',
+    'password'=>'bmeB4000',
     'port'=>'3306',
-    'defaultdb'=>'db',
+    'defaultdb'=>'dagl',
 
 ];
 

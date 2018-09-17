@@ -153,8 +153,8 @@
 					<!-- #section:basics/footer -->
 					<div class="footer-content">
 						<span class="bigger-120">
-							<span class="blue bolder">兴业物联</span>
-							人员档案管理系统 &copy; 2018-2019
+							<span class="blue bolder">网络爬虫</span>
+							网络爬虫管理系统 &copy; 2018-2019
 						</span>
 
 						&nbsp; &nbsp;
@@ -225,6 +225,29 @@
 					$('#nav-tools').css('left','35%');
 				}
 			});
+
+			function collect(id,zz,rowid)
+			{
+				$.ajax({
+					type: "post",
+					url: "php/dbd.php?oper=collect&id="+id+"&sczz="+zz,
+					dataType: "json",
+					beforeSend: function (e) {
+						e.setRequestHeader("Content-Type", "application/json")
+					},
+					success: function(t) {
+						if(t.code == 200){
+							bootbox.alert({message: t.message,size:"small",callback:function(){
+								$('#grid-table').jqGrid('setRowData',rowid,{sc:(zz=='Y'?'N':'Y')});
+							}});
+						}
+					},
+					error: function(t) {
+						//$('#error_div').css('display','');
+						//$('#error_msg').html(t.message);
+					}
+				});
+			}
 
 			function changepw(){
 				bootbox.dialog({

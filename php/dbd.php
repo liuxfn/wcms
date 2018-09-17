@@ -21,13 +21,13 @@ $dbUtil = new DBUtil();
         if("query" == $method)
         {
             return querySpxx();
-        }else if("add" == $method)
+        }else if("collect" == $method)
         {
-            $user_sf = $_POST['user_sf'] == '是' ? '1' : '0';
-            $sql = "INSERT INTO user VALUES(NULL,'".$_POST['user_name']."','".$user_sf."','".$_POST['ssxm']."','".md5($_POST['password'])."',now(),null,'Y','".$_POST['bz']."')";
+            return collectGoods();
         }else if("refresh" == $method)
         {
-            return  refreshSpxx(1);
+            $count = refreshSpxx(1);
+            return "{\"code\":\"200\",\"message\":\"下载成功:共计".$count."条商品信息\"}";
         }
         return updateUser($sql);
     }
@@ -52,8 +52,9 @@ $dbUtil = new DBUtil();
         category2Name,
         primaryPic,
         currentPrice,
-        status
-        from dbd_spxx where 1=1 and endTime > now() and ".$queryCondition." limit ".(($pageNo-1)*$pageSize).",".$pageSize);
+        status,
+        sc
+        from dbd_spxx where 1=1 and endTime > now() and ".$queryCondition." order by endTime limit ".(($pageNo-1)*$pageSize).",".$pageSize);
 
         $rtnArray = json_decode($reslult,true);
 
@@ -122,7 +123,7 @@ $dbUtil = new DBUtil();
                 $reslult = $GLOBALS['dbUtil']->updateSql($sql);
             }
             $splb = $content['data']['auctionInfos'];
-            $count = 1;
+            $count = count($splb);
             $insert_sql = "insert into dbd_spxx values";
             $insert_val = "";
             foreach($splb as $item)
@@ -150,22 +151,37 @@ $dbUtil = new DBUtil();
                         $insert_val.=',';
                     }
                 }
-                $insert_val.=")";
+                $insert_val.=",'N')";
 
             }
             $reslult = $GLOBALS['dbUtil']->updateSql($insert_sql." ".$insert_val);
             if($content['data']['hasNext'] == 'True')
             {
-                refreshSpxx($pageNo+1);
+                $count = $count + refreshSpxx($pageNo+1);
             }
+            return $count;
         }
 
-
-        //echo $output;
     }
 
     function refreshPrice(){
 
+    }
+
+    function collectGoods(){
+        $id=$_GET['id'];
+        $sczz=$_GET['sczz'] == 'Y'?'N':'Y';
+        $message=$_GET['sczz'] == 'Y'?'取消收藏成功，将取消提醒！':'添加收藏成功，将在截至时间前5分钟发送提醒！';
+        $sql = "update dbd_spxx set sc = '".$sczz."' where id = ".$id;
+        $reslult = $GLOBALS['dbUtil']->updateSql($sql);
+        if($reslult == -1)
+        {
+            return "{\"code\":\"400\",\"message\":\"\"}";
+        }
+        else
+        {
+            return "{\"code\":\"200\",\"message\":\".$message.\"}";
+        }
     }
 
     /**
