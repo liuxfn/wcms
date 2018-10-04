@@ -29,7 +29,7 @@ $dbUtil = new DBUtil();
             $count = refreshSpxx(1);
             return "{\"code\":\"200\",\"message\":\"下载成功:共计".$count."条商品信息\"}";
         }
-        return updateUser($sql);
+        //return updateUser($sql);
     }
 
     function querySpxx()
