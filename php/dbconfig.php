@@ -1,10 +1,10 @@
 <?php
 return [
     'servername'=>'localhost',
-    'username'=>'root',
-    'password'=>'bmeB4000',
+    'username'=>'username',
+    'password'=>'123456',
     'port'=>'3306',
-    'defaultdb'=>'dagl',
+    'defaultdb'=>'db',
 
 ];
 
