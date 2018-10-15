@@ -9,14 +9,15 @@ $dbUtil = new DBUtil();
 function dsrwHandler()
 {
 
-    $method = !isset($_GET['oper']) ? $_POST['oper'] : $_GET['oper'];
+    /*$method = !isset($_GET['oper']) ? $_POST['oper'] : $_GET['oper'];
     if (empty($method)) {
         return "{\"code\":\"401\",\"message\":\"方法名为空\"}";
     }
 
     if ("sendMessage" == $method) {
         return sendMessage();
-    }
+    }*/
+    sendMessage();
 }
 
 function sendMessage()
