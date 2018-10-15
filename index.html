@@ -183,7 +183,6 @@
 		<script type="text/javascript">
 			if('ontouchstart' in document.documentElement) document.write("<script src='components/_mod/jquery.mobile.custom/jquery.mobile.custom.min.js'>"+"<"+"/script>");
 			jQuery(function ($) {
-
 				$.ajax({
 					type: "post",
 					url: "php/login.php?method=check_session",
@@ -201,6 +200,7 @@
 							 href += '?type=wap';
 							 }
 							 location.href = href;
+							 return;
 						}else{
 							$('#user_name').html($.cookie("user_name"));
 							if($.cookie("user_sf") != 1){

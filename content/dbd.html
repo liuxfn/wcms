@@ -79,7 +79,6 @@
             })
 
 
-
             jQuery(grid_selector).jqGrid({
                 url:"php/dbd.php?oper=query",
                 datatype: "json",
@@ -90,7 +89,7 @@
                     {name:'spcs',index:'spcs', width:90,sortable:false,search:false,searchoptions:{sopt:['cn']}},
                     {name:'primaryPic',index:'primaryPic', width:175,search:false,formatter:function(cellvalue,options,rowObject ){return '<img src="https://img10.360buyimg.com/n1/s250x250_'+cellvalue+ '"  style="width:175px;height:175px;" />';}},
                     {name:'productName',index:'productName', width:300,sortable:false,searchoptions:{sopt:['cn']},formatter:function(cellvalue,options,rowObject ){return '<a href="https://paipai.m.jd.com/m/raise_auction.html?auctionId='+rowObject.id+'" target="_blank">'+cellvalue+'</a>';}},
-                    {name:'endTime',index:'endTime', width:140, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
+                    {name:'endTime',index:'endTime', width:140, search:false, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
                     {name:'currentPrice',index:'currentPrice', width:70, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
                     {name:'cappedPrice',index:'cappedPrice', width:70, sortable:false,searchoptions:{sopt:['lt','le','gt','ge']}},
                     {name:'category1Name',index:'category1Name', width:70, sortable:false,searchoptions:{sopt:['cn']}},
@@ -107,6 +106,7 @@
 
                 shrinkToFit:false,
                 autoScroll: true,
+                jsonReader:{repeatitems:false},
 
                 multiselect: false,
                 //multikey: "ctrlKey",
@@ -207,6 +207,8 @@
                                     }
                                 },
                                 error: function(t) {
+                                    debugger;
+                                    alert(123);
                                     //$('#error_div').css('display','');
                                     //$('#error_msg').html(t.message);
                                 }

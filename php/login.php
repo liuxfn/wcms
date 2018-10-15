@@ -16,46 +16,45 @@ $util = new commonUtil();
 
 function login($postStr)
 {
-    $post = json_decode($postStr,true);
+    $post = json_decode($postStr, true);
     $user_id = $post['user_id'];
     $password = $post['password'];
-    if(!isset($user_id)||!isset($password)||empty($user_id)||empty($password))
-    {
+    if (!isset($user_id) || !isset($password) || empty($user_id) || empty($password)) {
         return "{\"code\":\"401\",\"message\":\"用户名或密码为空，请重试\"}";
     }
 
-    if(!is_numeric($user_id))
-    {
+    if (!is_numeric($user_id)) {
         return "{\"code\":\"401\",\"message\":\"用户名或密码错误\"}";
     }
 
-	$reslult = $GLOBALS['dbUtil']->querySql("select user_id,user_name,user_sf,ssxm from user where user_id = ".$user_id." and password = '".$password."'");
-    $p = json_decode($reslult,true);
-    if($p['total']>0)
-    {
+    $reslult = $GLOBALS['dbUtil']->querySql("select user_id,user_name,user_sf,ssxm from user where user_id = " . $user_id . " and password = '" . $password . "'");
+    $p = json_decode($reslult, true);
+    if ($p['total'] > 0) {
         $uuid = $GLOBALS['util']->guid();
         session_start();
-        $_SESSION['authorization']=$uuid;
-        $_SESSION['user_name']=$p['rows'][0]['user_name'];
-        $_SESSION['user_id']=$p['rows'][0]['user_id'];
-        $_SESSION['user_sf']=$p['rows'][0]['user_sf'];
-        $_SESSION['user_ssxm']=$p['rows'][0]['ssxm'];
-        $return_str = "{\"code\":\"200\",\"message\":\"登陆成功\",\"user_id\":\"".$p['rows'][0]['user_id']."\",\"user_name\":\"".$p['rows'][0]['user_name']."\",\"user_sf\":\"".$p['rows'][0]['user_sf']."\",\"user_ssxm\":\"".$p['rows'][0]['ssxm']."\",\"authorization\":\"".$uuid."\"}";
+        $_SESSION['authorization'] = $uuid;
+        $_SESSION['user_name'] = $p['rows'][0]['user_name'];
+        $_SESSION['user_id'] = $p['rows'][0]['user_id'];
+        $_SESSION['user_sf'] = $p['rows'][0]['user_sf'];
+        $_SESSION['user_ssxm'] = $p['rows'][0]['ssxm'];
+        $return_str = "{\"code\":\"200\",\"message\":\"登陆成功\",\"user_id\":\"" . $p['rows'][0]['user_id'] . "\",\"user_name\":\"" . $p['rows'][0]['user_name'] . "\",\"user_sf\":\"" . $p['rows'][0]['user_sf'] . "\",\"user_ssxm\":\"" . $p['rows'][0]['ssxm'] . "\",\"authorization\":\"" . $uuid . "\"}";
         return $return_str;
     }
     return "{\"code\":\"401\",\"message\":\"用户名或密码错误\"}";
 }
 
-function check_session(){
+function check_session()
+{
     session_start();
-    if(!isset($_SESSION["authorization"]) || $_SESSION["authorization"] == '' || $_SESSION["authorization"] != $_COOKIE["authorization"]){
+    if (!isset($_SESSION["authorization"]) || $_SESSION["authorization"] == '' || $_SESSION["authorization"] != $_COOKIE["authorization"]) {
         return "{\"code\":\"401\",\"message\":\"请重新登陆\"}";
-    }else{
+    } else {
         return "{\"code\":\"200\",\"message\":\"用户已登陆\"}";
     }
 }
 
-function logout(){
+function logout()
+{
     session_start();
     session_destroy();
     return "{\"code\":\"200\",\"message\":\"登出成功\"}";
@@ -63,28 +62,20 @@ function logout(){
 
 function accountHandler()
 {
-    $method = !isset($_GET['method'])?'':$_GET['method'];
-    if(empty($method))
-    {
+    $method = !isset($_GET['method']) ? '' : $_GET['method'];
+    if (empty($method)) {
         return "{\"code\":\"401\",\"message\":\"参数名为空\"}";
-    }
-    else if("login" == $method)
-    {
+    } else if ("login" == $method) {
         //$postStr=$GLOBALS["HTTP_RAW_POST_DATA"];
         $postStr = file_get_contents('php://input');
-        if(empty($postStr))
-        {
+        if (empty($postStr)) {
             return "{\"code\":\"401\",\"message\":\"用户名或密码为空，请重试\"}";
         }
         return login($postStr);
 
-    }
-    else if("logout" == $method)
-    {
+    } else if ("logout" == $method) {
         return logout();
-    }
-    else if("check_session" == $method)
-    {
+    } else if ("check_session" == $method) {
         return check_session();
     }
 }

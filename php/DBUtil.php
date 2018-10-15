@@ -11,33 +11,11 @@ class DBUtil
 {
     public static $dbconf = [];
 
-    private function createConn()
-    {
-        //$jsonStr = file_get_contents('mysql.json');
-        //$json = json_decode($jsonStr,true);
-
-        if(count(self::$dbconf) == 0){
-            self::$dbconf = include_once 'dbconfig.php';
-        }
-        $json = self::$dbconf;
-
-        $con = mysqli_connect($json['servername'],$json['username'],$json['password'],$json['defaultdb'],$json['port']);
-        // 检查连接
-        if (!$con)
-        {
-            die("连接错误: " . mysqli_connect_error());
-        }
-        mysqli_set_charset($con,"utf8");
-        mysqli_autocommit($con,FALSE);
-        return $con;
-    }
-
     public function querySql($sql)
     {
         //file_put_contents("log.txt",'---------------------------------------------------',FILE_APPEND);
-        //file_put_contents("log.txt",$sql,FILE_APPEND);
-        if(!isset($sql)||empty($sql))
-        {
+        //file_put_contents("log.txt",$GLOBALS['dbUtil']->msectime(),FILE_APPEND);
+        if (!isset($sql) || empty($sql)) {
             return "";
         }
         $con = $this->createConn();
@@ -46,45 +24,69 @@ class DBUtil
         $count = mysqli_num_rows($result);
         //$t = mysqli_fetch_array($result,MYSQLI_BOTH);
         //$p = mysqli_fetch_all($result,MYSQLI_BOTH);
-        $rtn="{\"total\":".$count.",\"rows\":[";
+        $rtn = "{\"total\":" . $count . ",\"rows\":[";
         //foreach ($p as $row)
-        while($row = mysqli_fetch_array($result,MYSQLI_BOTH))
-        {
+        while ($row = mysqli_fetch_array($result, MYSQLI_BOTH)) {
             $rtn .= json_encode($row);
-            if($count > 1)
-            {
-                $rtn .=",";
+            if ($count > 1) {
+                $rtn .= ",";
             }
             $count--;
         }
-        $rtn.="]}";
+        $rtn .= "]}";
         mysqli_close($con);
         return $rtn;
+    }
+
+    private function createConn()
+    {
+        //$jsonStr = file_get_contents('mysql.json');
+        //$json = json_decode($jsonStr,true);
+
+        if (count(self::$dbconf) == 0) {
+            self::$dbconf = include_once 'dbconfig.php';
+        }
+        $json = self::$dbconf;
+
+        $con = mysqli_connect($json['servername'], $json['username'], $json['password'], $json['defaultdb'], $json['port']);
+        // 检查连接
+        if (!$con) {
+            die("连接错误: " . mysqli_connect_error());
+        }
+        mysqli_set_charset($con, "utf8");
+        mysqli_autocommit($con, FALSE);
+        return $con;
     }
 
     public function updateSql($sql)
     {
         //file_put_contents("log.txt",'---------------------------------------------------',FILE_APPEND);
         //file_put_contents("log.txt",$sql,FILE_APPEND);
-        if(!isset($sql)||empty($sql))
-        {
+        if (!isset($sql) || empty($sql)) {
             return "";
         }
         $con = $this->createConn();
         $result = mysqli_query($con, $sql);
-        $code=0;
-        if(!$result)
-        {
+        $code = 0;
+        if (!$result) {
             $code = mysqli_errno($con);
             mysqli_rollback($con);
-        }
-        else
-        {
+        } else {
             $code = mysqli_affected_rows($con);
             mysqli_commit($con);
         }
         mysqli_close($con);
         return $code;
+    }
+
+    /**
+     * 返回当前时间戳
+     */
+    function msectime()
+    {
+        list($msec, $sec) = explode(' ', microtime());
+        $msectime = (float)sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
+        return $msectime;
     }
 }
 
