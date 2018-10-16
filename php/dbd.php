@@ -163,7 +163,7 @@ function collectGoods()
 {
     $id = $_GET['id'];
     $sczz = $_GET['sczz'] == 'Y' ? 'N' : 'Y';
-    $message = $_GET['sczz'] == 'Y' ? '取消收藏成功，将取消提醒！' : '添加收藏成功，将在截至时间前5分钟发送提醒！';
+    $message = $_GET['sczz'] == 'Y' ? '取消收藏成功，将取消提醒！' : '添加收藏成功，将在截至时间前3分钟发送提醒！';
     $sql = "update dbd_spxx set sc = '" . $sczz . "' where id = " . $id;
     $reslult = $GLOBALS['dbUtil']->updateSql($sql);
     if ($reslult == -1) {
