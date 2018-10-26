@@ -40,6 +40,10 @@ function refreshSpxx($pageNo)
 
             $insert_val .= "(";
             foreach ($item as $x => $x_value) {
+                if($x == 'quality'){
+                    break;
+                }
+
                 if ($x == 'startTime' || $x == 'endTime') {
                     $insert_val .= "FROM_UNIXTIME(" . $x_value . "/1000,'%Y-%m-%d %H:%i:%s')";
                 } else if ($x == 'productName') {
